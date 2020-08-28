@@ -11,15 +11,36 @@ class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     private var data = listOf<Recipe>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return RecipeViewHolder(
-            LayoutInflater
-                .from(parent.context)
-                .inflate(R.layout.recipe_list_item, parent, false)
-        )
+        when (viewType) {
+            RECIPE_TYPE -> {
+                return RecipeViewHolder(
+                    LayoutInflater
+                        .from(parent.context)
+                        .inflate(R.layout.recipe_list_item, parent, false)
+                )
+            }
+            LOADING_TYPE -> {
+                return LoadingViewHolder(
+                    LayoutInflater
+                        .from(parent.context)
+                        .inflate(R.layout.recipe_list_loading, parent, false)
+                )
+            }
+            else -> {
+                return RecipeViewHolder(
+                    LayoutInflater
+                        .from(parent.context)
+                        .inflate(R.layout.recipe_list_item, parent, false)
+                )
+            }
+        }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        (holder as RecipeViewHolder).bind(data[position])
+        when (getItemViewType(position)) {
+            RECIPE_TYPE -> (holder as RecipeViewHolder).bind(data[position])
+        }
+
     }
 
     override fun getItemCount(): Int {
@@ -29,6 +50,44 @@ class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun setData(data: List<Recipe>) {
         this.data = data
         notifyDataSetChanged()
+    }
+
+    fun displayLoading() {
+        if (!isLoading()) {
+            val recipe = Recipe(
+                "Loading...",
+                "",
+                "",
+                arrayOf(),
+                "",
+                "",
+                0f
+            )
+            data = listOf(recipe)
+            notifyDataSetChanged()
+        }
+    }
+
+    private fun isLoading(): Boolean {
+        if (data.isNotEmpty()) {
+            return data.last().title.equals("Loading...")
+        }
+        return false
+    }
+
+    override fun getItemViewType(position: Int): Int {
+        val recipe = data[position]
+        return if (recipe.title.equals("Loading...")) {
+            LOADING_TYPE
+        } else {
+            RECIPE_TYPE
+        }
+    }
+
+
+    companion object ViewHolderType {
+        const val RECIPE_TYPE = 1
+        const val LOADING_TYPE = 2
     }
 
 

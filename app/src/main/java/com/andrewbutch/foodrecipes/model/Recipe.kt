@@ -20,8 +20,9 @@ data class Recipe(
         parcel.readString(),
         parcel.readString(),
         parcel.readFloat()
-    ) {
-    }
+    )
+
+
 
     override fun describeContents(): Int {
         TODO("Not yet implemented")

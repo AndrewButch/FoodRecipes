@@ -43,6 +43,7 @@ class MainActivity : BaseActivity() {
         search_view.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
+                    adapter.displayLoading()
                     searchRecipes(query, 1)
                     return true
                 }
