@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.andrewbutch.foodrecipes.BaseActivity
 import com.andrewbutch.foodrecipes.R
 import com.andrewbutch.foodrecipes.model.Recipe
+import com.andrewbutch.foodrecipes.ui.main.adapter.RecipeListAdapter
 import com.andrewbutch.foodrecipes.viewmodels.RecipeListViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
@@ -29,13 +30,30 @@ class MainActivity : BaseActivity() {
 
         observeRecipeViewModel()
         setupRecyclerView()
-        searchRecipes("chicken", 1)
+        setupSearchView()
     }
 
     private fun setupRecyclerView() {
         adapter = RecipeListAdapter()
         recipe_list.layoutManager = LinearLayoutManager(applicationContext)
         recipe_list.adapter = adapter
+    }
+
+    private fun setupSearchView() {
+        search_view.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                query?.let {
+                    searchRecipes(query, 1)
+                    return true
+                }
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+               return false;
+            }
+
+        })
     }
 
     private fun searchRecipes(query: String, page: Int) {

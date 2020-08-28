@@ -1,4 +1,4 @@
-package com.andrewbutch.foodrecipes.ui.main
+package com.andrewbutch.foodrecipes.ui.main.adapter
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
