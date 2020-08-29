@@ -5,8 +5,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.andrewbutch.foodrecipes.R
 import com.andrewbutch.foodrecipes.model.Recipe
+import com.andrewbutch.foodrecipes.utils.Constants
 
-class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var data = listOf<Recipe>()
 
@@ -16,7 +17,8 @@ class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                 return RecipeViewHolder(
                     LayoutInflater
                         .from(parent.context)
-                        .inflate(R.layout.recipe_list_item, parent, false)
+                        .inflate(R.layout.recipe_list_item, parent, false),
+                    listener
                 )
             }
             LOADING_TYPE -> {
@@ -26,11 +28,20 @@ class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                         .inflate(R.layout.recipe_list_loading, parent, false)
                 )
             }
+            CATEGORY_TYPE -> {
+                return CategoryViewHolder(
+                    LayoutInflater
+                        .from(parent.context)
+                        .inflate(R.layout.recipe_list_category, parent, false),
+                    listener
+                )
+            }
             else -> {
                 return RecipeViewHolder(
                     LayoutInflater
                         .from(parent.context)
-                        .inflate(R.layout.recipe_list_item, parent, false)
+                        .inflate(R.layout.recipe_list_item, parent, false),
+                    listener
                 )
             }
         }
@@ -39,12 +50,13 @@ class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             RECIPE_TYPE -> (holder as RecipeViewHolder).bind(data[position])
+            CATEGORY_TYPE -> (holder as CategoryViewHolder).bind(data[position])
         }
 
     }
 
     override fun getItemCount(): Int {
-        return data.size ?: 0
+        return data.size
     }
 
     fun setData(data: List<Recipe>) {
@@ -75,12 +87,36 @@ class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         return false
     }
 
+    fun displaySearchCategory() {
+        val recipes = arrayListOf<Recipe>()
+        for (i in Constants.DEFAULT_SEARCH_CATEGORIES.indices) {
+            val recipe = Recipe(
+                Constants.DEFAULT_SEARCH_CATEGORIES[i],
+                "",
+                "",
+                arrayOf(),
+                "",
+                Constants.DEFAULT_SEARCH_CATEGORY_IMAGES[i],
+                -1f
+            )
+            recipes.add(recipe)
+        }
+        data = recipes
+        notifyDataSetChanged()
+    }
+
     override fun getItemViewType(position: Int): Int {
         val recipe = data[position]
-        return if (recipe.title.equals("Loading...")) {
-            LOADING_TYPE
-        } else {
-            RECIPE_TYPE
+        return when {
+            recipe.social_rank == -1f -> {
+                CATEGORY_TYPE
+            }
+            recipe.title.equals("Loading...") -> {
+                LOADING_TYPE
+            }
+            else -> {
+                RECIPE_TYPE
+            }
         }
     }
 
@@ -88,6 +124,7 @@ class RecipeListAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object ViewHolderType {
         const val RECIPE_TYPE = 1
         const val LOADING_TYPE = 2
+        const val CATEGORY_TYPE = 3
     }
 
 

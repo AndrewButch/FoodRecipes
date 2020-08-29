@@ -1,6 +1,6 @@
 package com.andrewbutch.foodrecipes.requests
 
-import com.andrewbutch.foodrecipes.Constants
+import com.andrewbutch.foodrecipes.utils.Constants
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

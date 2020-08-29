@@ -6,12 +6,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.andrewbutch.foodrecipes.BaseActivity
 import com.andrewbutch.foodrecipes.R
-import com.andrewbutch.foodrecipes.model.Recipe
+import com.andrewbutch.foodrecipes.ui.main.adapter.OnRecipeListener
 import com.andrewbutch.foodrecipes.ui.main.adapter.RecipeListAdapter
+import com.andrewbutch.foodrecipes.utils.VerticalItemDecoration
 import com.andrewbutch.foodrecipes.viewmodels.RecipeListViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : BaseActivity() {
+class MainActivity : BaseActivity(), OnRecipeListener {
     private val TAG = "MainActivity"
 
     private lateinit var adapter: RecipeListAdapter
@@ -31,12 +32,22 @@ class MainActivity : BaseActivity() {
         observeRecipeViewModel()
         setupRecyclerView()
         setupSearchView()
+        if (!viewModel.isViewingRecipes) {
+            displaySearchCategories()
+        }
+    }
+
+    private fun displaySearchCategories() {
+        viewModel.isViewingRecipes = false
+        adapter.displaySearchCategory()
     }
 
     private fun setupRecyclerView() {
-        adapter = RecipeListAdapter()
+        val itemDecoration = VerticalItemDecoration(30)
+        adapter = RecipeListAdapter(this)
         recipe_list.layoutManager = LinearLayoutManager(applicationContext)
         recipe_list.adapter = adapter
+        recipe_list.addItemDecoration(itemDecoration)
     }
 
     private fun setupSearchView() {
@@ -63,14 +74,27 @@ class MainActivity : BaseActivity() {
 
     private fun observeRecipeViewModel() {
         viewModel.getRecipeList().observe(this) {
-            adapter.setData(it)
+            if (viewModel.isViewingRecipes) {
+                adapter.setData(it)
+            }
         }
     }
 
-    private fun printRecipeList(list: List<Recipe>) {
-        Log.d(TAG, "printRecipeList: -------- New list --------")
-        for (recipe in list) {
-            Log.d(TAG, "printRecipeList: $recipe")
+    override fun onRecipeClick(position: Int) {
+        Log.d(TAG, "onRecipeClick: ")
+    }
+
+    override fun onCategoryClick(title: String) {
+        Log.d(TAG, "onCategoryClick: $title")
+        adapter.displayLoading()
+        searchRecipes(title, 1)
+    }
+
+    override fun onBackPressed() {
+        if(!viewModel.isViewingRecipes) {
+            super.onBackPressed()
+        } else {
+            displaySearchCategories()
         }
     }
 }

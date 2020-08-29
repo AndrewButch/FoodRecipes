@@ -10,12 +10,14 @@ import kotlinx.android.synthetic.main.recipe_list_item.view.*
 import kotlin.math.roundToInt
 
 
-open class RecipeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+open class RecipeViewHolder(itemView: View, private val listener: OnRecipeListener) :
+    RecyclerView.ViewHolder(itemView),
+    View.OnClickListener {
 
-    val title = itemView.recipe_title
-    val publisher = itemView.recipe_publisher
-    val socialScore = itemView.recipe_social_score
-    val image = itemView.recipe_image
+    private val title = itemView.recipe_title
+    private val publisher = itemView.recipe_publisher
+    private val socialScore = itemView.recipe_social_score
+    private val image = itemView.recipe_image
 
 
     fun bind(recipe: Recipe) {
@@ -30,6 +32,11 @@ open class RecipeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) 
             .setDefaultRequestOptions(requestOptions)
             .load(recipe.image_url)
             .into(image)
+        itemView.setOnClickListener(this)
+    }
+
+    override fun onClick(v: View?) {
+        listener.onRecipeClick(adapterPosition)
     }
 
 }
