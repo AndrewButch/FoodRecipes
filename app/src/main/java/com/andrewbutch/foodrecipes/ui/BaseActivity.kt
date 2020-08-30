@@ -1,8 +1,9 @@
-package com.andrewbutch.foodrecipes
+package com.andrewbutch.foodrecipes.ui
 
 import android.view.View
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
+import com.andrewbutch.foodrecipes.R
 import kotlinx.android.synthetic.main.activity_base.*
 
 open class BaseActivity : AppCompatActivity() {

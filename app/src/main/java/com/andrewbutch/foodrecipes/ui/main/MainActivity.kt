@@ -1,12 +1,14 @@
 package com.andrewbutch.foodrecipes.ui.main
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.andrewbutch.foodrecipes.BaseActivity
 import com.andrewbutch.foodrecipes.R
+import com.andrewbutch.foodrecipes.ui.BaseActivity
+import com.andrewbutch.foodrecipes.ui.detail.RecipeDetailActivity
 import com.andrewbutch.foodrecipes.ui.main.adapter.OnRecipeListener
 import com.andrewbutch.foodrecipes.ui.main.adapter.RecipeListAdapter
 import com.andrewbutch.foodrecipes.utils.Testing
@@ -31,7 +33,7 @@ class MainActivity : BaseActivity(), OnRecipeListener {
         )
             .get(RecipeListViewModel::class.java)
 
-        observeRecipeViewModel()
+        observeLiveData()
         setupRecyclerView()
         setupSearchView()
         if (!viewModel.isViewingRecipes) {
@@ -85,7 +87,7 @@ class MainActivity : BaseActivity(), OnRecipeListener {
         viewModel.searchRecipes(query, page)
     }
 
-    private fun observeRecipeViewModel() {
+    private fun observeLiveData() {
         viewModel.getRecipeList().observe(this) {
             if (viewModel.isViewingRecipes) {
                 viewModel.isPerformingQuery = false
@@ -94,10 +96,20 @@ class MainActivity : BaseActivity(), OnRecipeListener {
                 adapter.setData(it)
             }
         }
+
+        viewModel.isQueryExhausted().observe(this) { isQueryExhausted ->
+            if (isQueryExhausted) {
+                Log.d(TAG, "isQueryExhasuted: $isQueryExhausted ")
+                adapter.setQueryExhausted()
+            }
+        }
     }
 
     override fun onRecipeClick(position: Int) {
         Log.d(TAG, "onRecipeClick: ")
+        val intent = Intent(this, RecipeDetailActivity::class.java)
+        intent.putExtra("recipe", adapter.getSelectedRecipe(position))
+        startActivity(intent)
     }
 
     override fun onCategoryClick(title: String) {

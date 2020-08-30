@@ -9,7 +9,7 @@ import com.andrewbutch.foodrecipes.utils.Constants
 
 class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private var data = listOf<Recipe>()
+    private var data = arrayListOf<Recipe>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         when (viewType) {
@@ -26,6 +26,13 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
                     LayoutInflater
                         .from(parent.context)
                         .inflate(R.layout.recipe_list_loading, parent, false)
+                )
+            }
+            EXHAUSTED_TYPE -> {
+                return SearchExhaustedViewHolder(
+                    LayoutInflater
+                        .from(parent.context)
+                        .inflate(R.layout.recipe_list_exhausted, parent, false)
                 )
             }
             CATEGORY_TYPE -> {
@@ -60,7 +67,8 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
     }
 
     fun setData(data: List<Recipe>) {
-        this.data = data
+        this.data.clear()
+        this.data.addAll(data)
         notifyDataSetChanged()
     }
 
@@ -112,9 +120,12 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
             recipe.title.equals(LOADING_KEY) -> {
                 LOADING_TYPE
             }
+            recipe.title.equals("Exhausted...") -> {
+                EXHAUSTED_TYPE
+            }
             position == data.lastIndex &&
                     position != 0 &&
-                    !recipe.title.equals("Enhausing...") -> {
+                    !recipe.title.equals("Exhausted...") -> {
                 LOADING_TYPE
             }
             else -> {
@@ -123,11 +134,45 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
         }
     }
 
+    fun setQueryExhausted() {
+        hideLoading()
+        val exhaustedRecipe = Recipe(
+            "Exhausted...",
+            "",
+            "",
+            arrayOf(),
+            "",
+            "",
+            0f
+        )
+        data.add(exhaustedRecipe)
+        notifyItemInserted(data.lastIndex)
+    }
+
+    private fun hideLoading() {
+        if (isLoading()) {
+            for (recipe in data) {
+                if (recipe.title.equals(LOADING_KEY)) {
+                    data.remove(recipe)
+                }
+            }
+            notifyDataSetChanged()
+        }
+    }
+
+    fun getSelectedRecipe(position: Int): Recipe? {
+        if (!data.isNullOrEmpty()) {
+            return data[position]
+        }
+        return null
+    }
+
 
     companion object ViewHolderType {
         const val RECIPE_TYPE = 1
         const val LOADING_TYPE = 2
         const val CATEGORY_TYPE = 3
+        const val EXHAUSTED_TYPE = 4
 
         const val LOADING_KEY = "Loading..."
     }

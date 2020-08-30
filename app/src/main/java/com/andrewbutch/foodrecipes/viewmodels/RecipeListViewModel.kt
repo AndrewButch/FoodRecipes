@@ -5,15 +5,13 @@ import androidx.lifecycle.ViewModel
 import com.andrewbutch.foodrecipes.model.Recipe
 import com.andrewbutch.foodrecipes.repositories.RecipeRepository
 
-private const val TAG = "RecipeListViewModel"
-
 class RecipeListViewModel() : ViewModel() {
     private val recipesRepository = RecipeRepository
     var isViewingRecipes = false
     var isPerformingQuery = false
 
     fun getRecipeList(): LiveData<List<Recipe>> {
-        return recipesRepository.getRecipe()
+        return recipesRepository.recipes
     }
 
     fun searchRecipes(query: String, page: Int) {
@@ -37,9 +35,16 @@ class RecipeListViewModel() : ViewModel() {
     }
 
     fun searchNextPage() {
-        if (!isPerformingQuery && isViewingRecipes) {
+        val isExhausted: Boolean = isQueryExhausted().value?: false
+        if (!isPerformingQuery
+            && isViewingRecipes
+            && !isExhausted) {
             isPerformingQuery = true
             recipesRepository.searchNextPage()
         }
+    }
+
+    fun isQueryExhausted(): LiveData<Boolean> {
+        return recipesRepository.isQueryExhausted
     }
 }
