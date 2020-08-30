@@ -67,7 +67,7 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
     fun displayLoading() {
         if (!isLoading()) {
             val recipe = Recipe(
-                "Loading...",
+                LOADING_KEY,
                 "",
                 "",
                 arrayOf(),
@@ -75,14 +75,13 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
                 "",
                 0f
             )
-            data = listOf(recipe)
-            notifyDataSetChanged()
+            setData(listOf(recipe))
         }
     }
 
     private fun isLoading(): Boolean {
         if (data.isNotEmpty()) {
-            return data.last().title.equals("Loading...")
+            return data.last().title.equals(LOADING_KEY)
         }
         return false
     }
@@ -101,8 +100,7 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
             )
             recipes.add(recipe)
         }
-        data = recipes
-        notifyDataSetChanged()
+        setData(recipes)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -111,7 +109,12 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
             recipe.social_rank == -1f -> {
                 CATEGORY_TYPE
             }
-            recipe.title.equals("Loading...") -> {
+            recipe.title.equals(LOADING_KEY) -> {
+                LOADING_TYPE
+            }
+            position == data.lastIndex &&
+                    position != 0 &&
+                    !recipe.title.equals("Enhausing...") -> {
                 LOADING_TYPE
             }
             else -> {
@@ -125,6 +128,8 @@ class RecipeListAdapter(private val listener: OnRecipeListener) : RecyclerView.A
         const val RECIPE_TYPE = 1
         const val LOADING_TYPE = 2
         const val CATEGORY_TYPE = 3
+
+        const val LOADING_KEY = "Loading..."
     }
 
 

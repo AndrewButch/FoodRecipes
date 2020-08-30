@@ -4,32 +4,46 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.andrewbutch.foodrecipes.model.Recipe
 import com.andrewbutch.foodrecipes.requests.resonses.RecipeSearchResponse
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.andrewbutch.foodrecipes.utils.Testing
+import kotlinx.coroutines.*
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 object RecipeApiClient {
+    private const val TAG = "RecipeApiClient"
     private val _recipe = MutableLiveData<List<Recipe>>()
     val recipe: LiveData<List<Recipe>>
         get() {
             return _recipe
         }
     private val recipeApi = ApiBuilder.getRecipeApi()
+    private var job: Job? = null
+    private var isJobCanceled = false
 
     fun searchRecipes(query: String, page: Int) {
-        CoroutineScope(Dispatchers.IO).launch {
+        isJobCanceled = false
+        job = CoroutineScope(Dispatchers.IO).launch {
+            delay(2000L)
             val responseCall = getRecipes(query, page)
+            Testing.printQuery("Try to request",responseCall, TAG)
             responseCall.enqueue(object : Callback<RecipeSearchResponse> {
                 override fun onResponse(
                     call: Call<RecipeSearchResponse>,
                     response: Response<RecipeSearchResponse>
                 ) {
-                    if (response.isSuccessful) {
+                    if (response.isSuccessful && !isJobCanceled) {
                         response.body()?.let {
-                            _recipe.postValue(it.recipes)
+                            if (page == 1) {
+                                _recipe.postValue(it.recipes)
+                            } else {
+                                val currentRecipes = recipe.value as List<Recipe>
+                                val expandedRecipesList = arrayListOf<Recipe>()
+                                expandedRecipesList.addAll(currentRecipes)
+                                expandedRecipesList.addAll(it.recipes)
+                                _recipe.postValue(expandedRecipesList)
+                            }
+                            Testing.printQuery("Resuest success", call, TAG)
                         }
                     }
                 }
@@ -47,7 +61,17 @@ object RecipeApiClient {
 
     }
 
+    fun cancelRequest() {
+        job?.let {
+            isJobCanceled = true
+            it.cancel()
+        }
+    }
+
     private fun getRecipes(query: String, page: Int): Call<RecipeSearchResponse> {
         return recipeApi.searchRecipes(query, page.toString())
     }
+
+
+
 }

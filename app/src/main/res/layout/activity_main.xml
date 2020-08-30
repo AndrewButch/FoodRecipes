@@ -20,28 +20,22 @@
                 android:id="@+id/search_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:queryHint="cookie..."/>
+                android:queryHint="cookie..." />
 
         </androidx.appcompat.widget.Toolbar>
 
 
-
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recipe_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior">
+        android:orientation="vertical"
+        app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recipe_list"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-
-            tools:listitem="@layout/recipe_list_item" />
-
-    </androidx.core.widget.NestedScrollView>
+        tools:listitem="@layout/recipe_list_item" />
 
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

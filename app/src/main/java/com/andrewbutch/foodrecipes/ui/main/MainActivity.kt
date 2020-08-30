@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.andrewbutch.foodrecipes.BaseActivity
 import com.andrewbutch.foodrecipes.R
 import com.andrewbutch.foodrecipes.ui.main.adapter.OnRecipeListener
 import com.andrewbutch.foodrecipes.ui.main.adapter.RecipeListAdapter
+import com.andrewbutch.foodrecipes.utils.Testing
 import com.andrewbutch.foodrecipes.utils.VerticalItemDecoration
 import com.andrewbutch.foodrecipes.viewmodels.RecipeListViewModel
 import kotlinx.android.synthetic.main.activity_main.*
@@ -48,12 +50,23 @@ class MainActivity : BaseActivity(), OnRecipeListener {
         recipe_list.layoutManager = LinearLayoutManager(applicationContext)
         recipe_list.adapter = adapter
         recipe_list.addItemDecoration(itemDecoration)
+        recipe_list.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (!recipe_list.canScrollVertically(1)) {
+                    Log.d(TAG, "searchNextPage: next page")
+
+                    viewModel.searchNextPage()
+                }
+            }
+        })
     }
 
     private fun setupSearchView() {
-        search_view.setOnQueryTextListener(object: android.widget.SearchView.OnQueryTextListener {
+        search_view.setOnQueryTextListener(object : android.widget.SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
+                    search_view.clearFocus()
                     adapter.displayLoading()
                     searchRecipes(query, 1)
                     return true
@@ -62,7 +75,7 @@ class MainActivity : BaseActivity(), OnRecipeListener {
             }
 
             override fun onQueryTextChange(newText: String?): Boolean {
-               return false;
+                return false;
             }
 
         })
@@ -75,6 +88,9 @@ class MainActivity : BaseActivity(), OnRecipeListener {
     private fun observeRecipeViewModel() {
         viewModel.getRecipeList().observe(this) {
             if (viewModel.isViewingRecipes) {
+                viewModel.isPerformingQuery = false
+                Testing.printRecipes(it, TAG)
+                Log.d(TAG, "new recipes size: ${it.size}")
                 adapter.setData(it)
             }
         }
@@ -86,15 +102,15 @@ class MainActivity : BaseActivity(), OnRecipeListener {
 
     override fun onCategoryClick(title: String) {
         Log.d(TAG, "onCategoryClick: $title")
+        search_view.clearFocus()
         adapter.displayLoading()
         searchRecipes(title, 1)
     }
 
     override fun onBackPressed() {
-        if(!viewModel.isViewingRecipes) {
-            super.onBackPressed()
-        } else {
-            displaySearchCategories()
+        when {
+            viewModel.onBackPress() -> super.onBackPressed()
+            else -> displaySearchCategories()
         }
     }
 }
